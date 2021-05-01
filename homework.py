@@ -52,7 +52,6 @@ def get_homework_statuses(current_timestamp):
         headers=headers,
     )
     try:
-        homework_statuses.raise_for_status()
         return homework_statuses.json()
     except requests.exceptions.HTTPError as error:
         message_error = homework_statuses.text
