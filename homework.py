@@ -45,7 +45,7 @@ def get_homework_statuses(current_timestamp):
     if current_timestamp is None:
         current_timestamp = int(time.time())
     data = {'from_date': current_timestamp}
-    headers = {'Authorization': f'OAuth12 {PRAKTIKUM_TOKEN}'}
+    headers = {'Authorization': f'OAuth {PRAKTIKUM_TOKEN}'}
     homework_statuses = requests.get(
         API_PRAKTIKUM,
         params=data,
