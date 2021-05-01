@@ -6,11 +6,13 @@ import requests
 import telegram
 from dotenv import load_dotenv
 
+API_PRAKTIKUM = 'https://praktikum.yandex.ru/api/user_api/homework_statuses/'
+
 logging.basicConfig(
     level=logging.DEBUG,
     format='%(asctime)s, %(levelname)s, %(name)s, %(message)s'
 )
-
+logger = logging.getLogger()
 
 load_dotenv()
 
@@ -22,8 +24,13 @@ bot_client = telegram.Bot(token=TELEGRAM_TOKEN)
 
 
 def parse_homework_status(homework):
-    homework_name = homework['homework_name']
-    homework_status = homework['status']
+    homework_name = homework.get('homework_name')
+    homework_status = homework.get('status')
+    if homework_status == 'reviewing':
+        return (
+            f'Руслан взял в работу {homework_name}, '
+            'уЗбогойся, он знает что делает! :grin:'
+        )
     if homework_status == 'rejected':
         verdict = 'К сожалению в работе нашлись ошибки.'
     else:
@@ -35,15 +42,23 @@ def parse_homework_status(homework):
 
 
 def get_homework_statuses(current_timestamp):
-
+    if current_timestamp is None:
+        current_timestamp = int(time.time())
     data = {'from_date': current_timestamp}
-    headers = {'Authorization': f'OAuth {PRAKTIKUM_TOKEN}'}
+    headers = {'Authorization': f'OAuth12 {PRAKTIKUM_TOKEN}'}
     homework_statuses = requests.get(
-        'https://praktikum.yandex.ru/api/user_api/homework_statuses/',
+        API_PRAKTIKUM,
         params=data,
         headers=headers,
     )
-    return homework_statuses.json()
+    try:
+        homework_statuses.raise_for_status()
+        return homework_statuses.json()
+    except requests.exceptions.HTTPError as error:
+        message_error = homework_statuses.text
+        logger.error(f'не правильный адрес : {message_error}')
+        send_message((f'Бот столкнулся с ошибкой: {error}'), bot_client)
+        return {}
 
 
 def send_message(message, bot_client):
@@ -63,7 +78,7 @@ def main():
             current_timestamp = new_homework.get(
                 'current_date', current_timestamp
             )
-            time.sleep(1200)
+            time.sleep(12)
 
         except Exception as e:
             send_message((f'Бот столкнулся с ошибкой: {e}'), bot_client)
