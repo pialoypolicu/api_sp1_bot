@@ -85,12 +85,12 @@ def main():
             current_timestamp = new_homework.get(
                 'current_date', current_timestamp
             )
-            if count < 2:
+            if count < 18:
                 count += 1
-                time.sleep(12)
+                time.sleep(1200)
             else:
                 count = 0
-                send_message('Смотри, я работаю.777', bot_client)
+                send_message('Смотри, я работаю.', bot_client)
 
 
         except Exception as e:
