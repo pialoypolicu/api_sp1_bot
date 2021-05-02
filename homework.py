@@ -55,12 +55,7 @@ def get_homework_statuses(current_timestamp):
         headers=headers,
     )
     try:
-        homework_statuses.raise_for_status()
         return homework_statuses.json()
-    except requests.exceptions.HTTPError as error:
-        message_error = homework_statuses.text
-        logger.error(f'не правильный адрес : {message_error}')
-        send_message(f'Бот столкнулся с ошибкой: {error}', bot_client)
     except ValueError:
         logger.error('Ошибка связанная с json')
         send_message(f'ошибка в json: {ValueError}', bot_client)
@@ -73,7 +68,6 @@ def send_message(message, bot_client):
 
 
 def main():
-    count = 0
     logging.debug('start bot')
     current_timestamp = int(time.time())
     while True:
@@ -85,13 +79,7 @@ def main():
             current_timestamp = new_homework.get(
                 'current_date', current_timestamp
             )
-            if count < 18:
-                count += 1
-                time.sleep(1200)
-            else:
-                count = 0
-                send_message('Смотри, я работаю.', bot_client)
-
+            time.sleep(1200)
 
         except Exception as e:
             send_message(f'Бот столкнулся с ошибкой: {e}', bot_client)
