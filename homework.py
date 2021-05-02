@@ -90,7 +90,7 @@ def main():
                 time.sleep(12)
             else:
                 count = 0
-                send_message('Смотри, я работаю.', bot_client)
+                send_message('Смотри, я работаю.777', bot_client)
 
 
         except Exception as e:
