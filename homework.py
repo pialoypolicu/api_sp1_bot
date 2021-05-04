@@ -26,22 +26,27 @@ bot_client = telegram.Bot(token=TELEGRAM_TOKEN)
 def parse_homework_status(homework):
     homework_name = homework.get('homework_name')
     if homework_name is None:
-        logger.error('нет проекта')
-        return 'нет проекта'
-
+        logger.error('Проект не найден')
+        return 'Проект не найден'
     homework_status = homework.get('status')
-    if homework_status == 'reviewing':
-        return (
-            f'Руслан взял в работу {homework_name}, '
-            'уЗбогойся, он знает что делает! :grin:'
-        )
+    if homework_status is None:
+        logger.error('Отсутствует статус')
+        return 'Отсутствует статус'
+
     if homework_status == 'rejected':
         verdict = 'К сожалению в работе нашлись ошибки.'
-    else:
+    elif homework_status == 'approved':
         verdict = (
             'Ревьюеру всё понравилось, '
             'можно приступать к следующему уроку.'
         )
+    elif homework_status == 'reviewing':
+        return (
+            f'Руслан взял в работу {homework_name}, '
+            'уЗбогойся, он знает что делает! :grin:'
+        )
+    else:
+        verdict = 'Не известное решение. Уточните детали к ревьюера.'
     return f'У вас проверили работу "{homework_name}"!\n\n{verdict}'
 
 
@@ -49,13 +54,17 @@ def get_homework_statuses(current_timestamp):
     current_timestamp = current_timestamp or int(time.time())
     data = {'from_date': current_timestamp}
     headers = {'Authorization': f'OAuth {PRAKTIKUM_TOKEN}'}
-    homework_statuses = requests.get(
-        API_PRAKTIKUM,
-        params=data,
-        headers=headers,
-    )
     try:
+        homework_statuses = requests.get(
+            API_PRAKTIKUM,
+            params=data,
+            headers=headers,
+        )
         return homework_statuses.json()
+    except requests.exceptions.RequestException:
+        logger.error('Ошибка запроса API')
+        send_message(('Напишите в поддержку, '
+                      'что разрабам надо поправить адрес API'), bot_client)
     except ValueError:
         logger.error('Ошибка связанная с json')
         send_message(f'ошибка в json: {ValueError}', bot_client)
